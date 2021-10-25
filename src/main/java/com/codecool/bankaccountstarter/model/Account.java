@@ -16,6 +16,8 @@ public class Account {
     @JoinColumn(name="owner_id", nullable = false)
     private OwnerInfo ownerInfo;
 
+    @OneToOne
+    @JoinColumn(name="credentials_id", nullable = false, unique = true, updatable = false)
     private Credentials credentials;
 
 

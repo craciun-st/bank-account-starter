@@ -15,6 +15,7 @@ public class Credentials {
 
     private String password;
 
+    @OneToOne(mappedBy = "credentials")
     private Account forAccount;
 
     public Credentials() {}
