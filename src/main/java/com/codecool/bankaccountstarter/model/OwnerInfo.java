@@ -16,6 +16,7 @@ public class OwnerInfo {
 
     private String name;
 
+    @OneToMany(mappedBy = "ownerInfo", cascade = CascadeType.ALL)
     private Set<Account> accounts;
 
 

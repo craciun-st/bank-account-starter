@@ -12,6 +12,8 @@ public class Account {
 
     private String code;    // IBAN, BIC, etc.
 
+    @ManyToOne
+    @JoinColumn(name="owner_id", nullable = false)
     private OwnerInfo ownerInfo;
 
     private Credentials credentials;
