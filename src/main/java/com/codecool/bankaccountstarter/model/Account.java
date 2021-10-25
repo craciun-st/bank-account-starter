@@ -51,4 +51,54 @@ public class Account {
         this.currency = currency;
     }
 
+    // Getters and setters
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public OwnerInfo getOwnerInfo() {
+        return ownerInfo;
+    }
+
+    public void setOwnerInfo(OwnerInfo ownerInfo) {
+        this.ownerInfo = ownerInfo;
+    }
+
+    public Credentials getCredentials() {
+        return credentials;
+    }
+
+    public void setCredentials(Credentials credentials) {
+        this.credentials = credentials;
+    }
+
+    public long getBalanceInCents() {
+        return balanceInCents;
+    }
+
+    public void setBalanceInCents(long balanceInCents) {
+        this.balanceInCents = balanceInCents;
+    }
+
+    public Currency getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+    }
 }
