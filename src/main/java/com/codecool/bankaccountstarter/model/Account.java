@@ -1,6 +1,8 @@
 package com.codecool.bankaccountstarter.model;
 
 import com.codecool.bankaccountstarter.model.security.Credentials;
+import com.codecool.bankaccountstarter.util.StringUtil;
+
 import javax.persistence.*;
 
 @Entity
@@ -50,6 +52,64 @@ public class Account {
         }
         this.currency = currency;
     }
+
+    public Account(Builder builder) {
+        OwnerInfo ownerInfo = new OwnerInfo(null, builder.ownerName);
+        Credentials credentials = new Credentials(null, builder.ownerPassword);
+
+        this.code = builder.accountCode;
+        this.currency = builder.accountCurrency;
+        this.ownerInfo = ownerInfo;
+        this.credentials = credentials;
+    }
+
+
+
+
+
+
+    // BUILDER
+
+    public static class Builder {
+        private String ownerName;
+        private String ownerPassword;
+        private String accountCode;
+        private Currency accountCurrency;
+
+        public Builder() {
+            this.accountCode = "RO42TEST"+ StringUtil.generateRandomUpcaseAlphaNumericString((byte) 16, null);
+            this.accountCurrency = Currency.EUR;
+        }
+
+        public Builder reset() {
+            return new Builder();
+        }
+
+        public Builder withOwnerName(String name) {
+            this.ownerName = name;
+            return this;
+        }
+
+        public Builder withPassword(String password) {
+            this.ownerPassword = password;
+            return this;
+        }
+
+        public Builder withAccountCode(String code) {
+            this.accountCode = code;
+            return this;
+        }
+
+        public Builder withCurrency(Currency currency) {
+            this.accountCurrency = currency;
+            return this;
+        }
+
+        public Account build() {
+            return new Account(this);
+        }
+    }
+
 
     // Getters and setters
 
