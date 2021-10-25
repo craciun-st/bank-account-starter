@@ -10,6 +10,7 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    @Column(name="iban", nullable = false, unique=true)
     private String code;    // IBAN, BIC, etc.
 
     @ManyToOne
@@ -23,6 +24,7 @@ public class Account {
 
     private long balanceInCents = 0;
 
+    @Enumerated(EnumType.STRING)
     private Currency currency = Currency.EUR;
 
     public Account() {
