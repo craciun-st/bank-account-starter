@@ -62,4 +62,16 @@ public class OwnerInfo {
         this.accounts = accountList;
     }
 
+
+    // Custom methods
+
+    public void addAccount(Account account) {
+        account.setOwnerInfo(this);
+        this.accounts.add(account);
+    }
+
+    public void removeAccount(Account account) {
+        boolean success = this.accounts.remove(account);
+        if (success) {account.setOwnerInfo(null);}
+    }
 }
