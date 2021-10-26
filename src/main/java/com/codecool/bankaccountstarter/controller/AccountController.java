@@ -9,7 +9,9 @@ import com.codecool.bankaccountstarter.model.dto.BalanceDto;
 import com.codecool.bankaccountstarter.model.dto.requests.CreateAccountDto;
 import com.codecool.bankaccountstarter.model.dto.requests.CreateSpecificAccountDto;
 import com.codecool.bankaccountstarter.model.dto.requests.DepositDto;
+import com.codecool.bankaccountstarter.model.dto.requests.WithdrawDto;
 import com.codecool.bankaccountstarter.model.exception.DuplicateAccountCodeException;
+import com.codecool.bankaccountstarter.model.exception.InsufficientFundsException;
 import com.codecool.bankaccountstarter.model.exception.UnauthorizedOperationException;
 import com.codecool.bankaccountstarter.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,7 +141,8 @@ public class AccountController {
     @PutMapping("api/account/{id}/deposit")
     public ResponseEntity<?> depositAmountToAccountId(
             @PathVariable Long id,
-            @RequestBody @Valid DepositDto requestBody) throws InvalidCurrencyException {
+            @RequestBody @Valid DepositDto requestBody) throws InvalidCurrencyException
+    {
         Account foundAccount;
         try {
             foundAccount = accountService.getAccountById(id).orElseThrow();
@@ -171,8 +174,50 @@ public class AccountController {
         return ResponseEntity.status(204).build();
     }
 
+    @PutMapping("/api/account/{id}/withdraw")
+    public ResponseEntity<?> withdrawFromAccountId(
+            @PathVariable Long id,
+            @RequestBody @Valid WithdrawDto requestBody
+    ) throws InvalidCurrencyException {
+        Account foundAccount;
+        try {
+            foundAccount = accountService.getAccountById(id).orElseThrow();
+        } catch (TransactionSystemException e) {
+            return ResponseEntity.status(409).build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
 
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+        Map<String, String> responseBody = new HashMap<>();
+        double withdrawnAmount = requestBody.getAmount();
+        Currency ammountCurrency = null;
+        try {
+            ammountCurrency = Enum.valueOf(Currency.class, requestBody.getAmountCurrency());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidCurrencyException("Currency name to withdraw to is not recognized!");
+        }
+        String verificationPayload = requestBody.getVerificationPayload();
+
+        try {
+            accountService.withdrawAmount(withdrawnAmount, ammountCurrency, foundAccount, verificationPayload);
+        } catch (InsufficientFundsException e) {
+            responseBody.put("amount", e.getMessage());
+            responseBody.put("extraInfo", "Please check the balance for account id: "+id);
+            URI balanceUri = linkTo(methodOn(AccountController.class).getBalanceForAccountId(id)).toUri();
+            responseBody.put("infoRedirect", balanceUri.toString());
+            return ResponseEntity.status(405).body(responseBody);
+        } catch (UnauthorizedOperationException e) {
+            responseBody.put("endpointError", e.getMessage());
+            return ResponseEntity.status(401).body(responseBody);
+        } catch (TransactionSystemException e) {
+            return ResponseEntity.status(409).build();
+        }
+
+        return ResponseEntity.status(204).build();
+    }
+
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InvalidCurrencyException.class)
     public Map<String, String> handleInvalidCurrencyException(InvalidCurrencyException ex) {
         Map<String, String> response = new HashMap<>();
