@@ -10,7 +10,7 @@ public class Credentials {
     // attributes can be extended/be more detailed later on
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String password;

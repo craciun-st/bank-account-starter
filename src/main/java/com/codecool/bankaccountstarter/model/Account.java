@@ -13,7 +13,7 @@ public class Account {
     public static final String DEFAULT_ACCOUNT_CODE_PATTERN = "^[A-Z0-9]{4,64}$";
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name="iban", nullable = false, unique=true)
