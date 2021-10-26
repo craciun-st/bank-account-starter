@@ -4,15 +4,21 @@ import com.codecool.bankaccountstarter.model.security.Credentials;
 import com.codecool.bankaccountstarter.util.StringUtil;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 @Entity
 public class Account {
+
+    public static final String DEFAULT_ACCOUNT_CODE_PATTERN = "^[A-Z0-9]{4,64}$";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(name="iban", nullable = false, unique=true)
+    @NotBlank
+    @Pattern(regexp = DEFAULT_ACCOUNT_CODE_PATTERN)
     private String code;    // IBAN, BIC, etc.
 
     @ManyToOne

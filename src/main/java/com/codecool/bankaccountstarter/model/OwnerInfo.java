@@ -1,6 +1,8 @@
 package com.codecool.bankaccountstarter.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,6 +16,8 @@ public class OwnerInfo {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    @NotBlank
+    @Size(min=2, max=256)
     private String name;
 
     @OneToMany(mappedBy = "ownerInfo", cascade = CascadeType.ALL)
