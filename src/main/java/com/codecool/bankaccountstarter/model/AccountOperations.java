@@ -1,6 +1,7 @@
 package com.codecool.bankaccountstarter.model;
 
 import com.codecool.bankaccountstarter.model.dto.AccountDto;
+import com.codecool.bankaccountstarter.model.dto.BalanceDto;
 import com.codecool.bankaccountstarter.model.exception.DuplicateAccountCodeException;
 import com.codecool.bankaccountstarter.model.exception.InsufficientFundsException;
 import com.codecool.bankaccountstarter.model.exception.UnauthorizedOperationException;
@@ -43,5 +44,5 @@ public interface AccountOperations {
             Account toAccount
     ) throws InsufficientFundsException, TransactionSystemException;
 
-    Double displayBalance(Account account);
+    BalanceDto displayBalance(Account account);
 }
