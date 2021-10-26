@@ -5,6 +5,7 @@ import com.codecool.bankaccountstarter.model.Account;
 import com.codecool.bankaccountstarter.model.Currency;
 import com.codecool.bankaccountstarter.model.dto.AccountDto;
 import com.codecool.bankaccountstarter.model.dto.AccountMapper;
+import com.codecool.bankaccountstarter.model.dto.BalanceDto;
 import com.codecool.bankaccountstarter.model.dto.requests.CreateAccountDto;
 import com.codecool.bankaccountstarter.model.dto.requests.CreateSpecificAccountDto;
 import com.codecool.bankaccountstarter.model.dto.requests.DepositDto;
@@ -67,6 +68,24 @@ public class AccountController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/api/account/{id}/balance")
+    public ResponseEntity<BalanceDto> getBalanceForAccountId(@PathVariable Long id) {
+        Account foundAccount;
+        try {
+            foundAccount = accountService.getAccountById(id).orElseThrow();
+        } catch (TransactionSystemException e) {
+            return ResponseEntity.status(409).build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            BalanceDto result = accountService.displayBalance(foundAccount);
+            return ResponseEntity.ok().body(result);
+        } catch (TransactionSystemException e) {
+            return ResponseEntity.status(409).build();
+        }
     }
 
     @PostMapping("/api/accounts")
