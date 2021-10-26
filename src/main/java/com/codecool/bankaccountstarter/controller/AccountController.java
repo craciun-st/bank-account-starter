@@ -6,10 +6,7 @@ import com.codecool.bankaccountstarter.model.Currency;
 import com.codecool.bankaccountstarter.model.dto.AccountDto;
 import com.codecool.bankaccountstarter.model.dto.AccountMapper;
 import com.codecool.bankaccountstarter.model.dto.BalanceDto;
-import com.codecool.bankaccountstarter.model.dto.requests.CreateAccountDto;
-import com.codecool.bankaccountstarter.model.dto.requests.CreateSpecificAccountDto;
-import com.codecool.bankaccountstarter.model.dto.requests.DepositDto;
-import com.codecool.bankaccountstarter.model.dto.requests.WithdrawDto;
+import com.codecool.bankaccountstarter.model.dto.requests.*;
 import com.codecool.bankaccountstarter.model.exception.DuplicateAccountCodeException;
 import com.codecool.bankaccountstarter.model.exception.InsufficientFundsException;
 import com.codecool.bankaccountstarter.model.exception.UnauthorizedOperationException;
@@ -201,11 +198,7 @@ public class AccountController {
         try {
             accountService.withdrawAmount(withdrawnAmount, ammountCurrency, foundAccount, verificationPayload);
         } catch (InsufficientFundsException e) {
-            responseBody.put("amount", e.getMessage());
-            responseBody.put("extraInfo", "Please check the balance for account id: "+id);
-            URI balanceUri = linkTo(methodOn(AccountController.class).getBalanceForAccountId(id)).toUri();
-            responseBody.put("infoRedirect", balanceUri.toString());
-            return ResponseEntity.status(405).body(responseBody);
+            return getNotAllowedResponseWithBody(responseBody, e.getMessage(), id);
         } catch (UnauthorizedOperationException e) {
             responseBody.put("endpointError", e.getMessage());
             return ResponseEntity.status(401).body(responseBody);
@@ -214,6 +207,61 @@ public class AccountController {
         }
 
         return ResponseEntity.status(204).build();
+    }
+
+
+    @PutMapping("/api/transfer")
+    public ResponseEntity<?> performTransfer(@RequestBody @Valid TransferDto requestBody)
+            throws InvalidCurrencyException {
+        Long fromAccountId = requestBody.getFromAccountId();
+        Long toAccountId = requestBody.getToAccountId();
+        Account foundFromAccount;
+        Account foundToAccount;
+        boolean succeededFrom = false;
+        Map<String, String> responseBody = new HashMap<>();
+        try {
+            foundFromAccount = accountService.getAccountById(fromAccountId).orElseThrow();
+            succeededFrom = true;
+            foundToAccount = accountService.getAccountById(toAccountId).orElseThrow();
+        } catch (TransactionSystemException e) {
+            return ResponseEntity.status(409).build();
+        } catch (NoSuchElementException e) {
+            if (succeededFrom) {
+                responseBody.put("toAccountId", "Not found");
+            } else {
+                responseBody.put("fromAccountId","Not found");
+            }
+            return ResponseEntity.status(404).body(responseBody);
+        }
+
+        double amountToTransfer = requestBody.getAmount();
+        Currency ammountCurrency;
+        try {
+            ammountCurrency = Enum.valueOf(Currency.class, requestBody.getAmountCurrency());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidCurrencyException("Currency name in which to transfer is not recognized!");
+        }
+        try {
+            accountService.transferAmount(amountToTransfer, ammountCurrency, foundFromAccount, foundToAccount);
+        } catch (InsufficientFundsException e) {
+            return getNotAllowedResponseWithBody(responseBody, e.getMessage(), fromAccountId);
+        } catch (TransactionSystemException e) {
+            return ResponseEntity.status(409).build();
+        }
+
+        return ResponseEntity.status(204).build();
+    }
+
+    private ResponseEntity<?> getNotAllowedResponseWithBody(
+            Map<String, String> responseBody,
+            String errorMessage,
+            Long idForRedirect
+    ) {
+        responseBody.put("amount", errorMessage);
+        responseBody.put("extraInfo", "Please check the balance for account id: " + idForRedirect);
+        URI balanceUri = linkTo(methodOn(AccountController.class).getBalanceForAccountId(idForRedirect)).toUri();
+        responseBody.put("infoRedirect", balanceUri.toString());
+        return ResponseEntity.status(405).body(responseBody);
     }
 
 
