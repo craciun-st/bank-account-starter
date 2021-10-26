@@ -6,6 +6,8 @@ import com.codecool.bankaccountstarter.model.Currency;
 import com.codecool.bankaccountstarter.model.OwnerInfo;
 import com.codecool.bankaccountstarter.model.dto.AccountDto;
 import com.codecool.bankaccountstarter.model.dto.AccountMapper;
+import com.codecool.bankaccountstarter.model.dto.BalanceDto;
+import com.codecool.bankaccountstarter.model.dto.BalanceMapper;
 import com.codecool.bankaccountstarter.model.exception.DuplicateAccountCodeException;
 import com.codecool.bankaccountstarter.model.exception.InsufficientFundsException;
 import com.codecool.bankaccountstarter.model.exception.UnauthorizedOperationException;
@@ -26,11 +28,14 @@ import java.util.Optional;
 public class AccountService implements AccountOperations {
 
     private AccountRepository accountRepo;
+
     private NumericService numericService;
     private OwnerService ownerService;
     private SecurityManagementService securityService;
-    private AccountMapper accountMapper;
     private CashpointVerificationService verificationService;
+
+    private AccountMapper accountMapper;
+    private BalanceMapper balanceMapper;
 
     @Autowired
     public AccountService(
@@ -38,13 +43,18 @@ public class AccountService implements AccountOperations {
             NumericService numericService,
             OwnerService ownerService,
             SecurityManagementService securityService,
-            AccountMapper accountMapper
+            CashpointVerificationService verificationService,
+            AccountMapper accountMapper,
+            BalanceMapper balanceMapper
     ) {
         this.accountRepo = accountRepo;
         this.numericService = numericService;
         this.ownerService = ownerService;
         this.securityService = securityService;
+        this.verificationService = verificationService;
         this.accountMapper = accountMapper;
+        this.balanceMapper = balanceMapper;
+
     }
 
 
@@ -169,8 +179,8 @@ public class AccountService implements AccountOperations {
     }
 
     @Override
-    public Double displayBalance(Account account) {
-        return numericService.mapFixedToFloat(account.getBalanceInCents());
+    public BalanceDto displayBalance(Account account) {
+        return balanceMapper.balanceDtoFromAccountEntity(account);
     }
 
     @Transactional(
